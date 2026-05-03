@@ -36,3 +36,35 @@ def place_order():
     db.session.commit()
 
     return "order placed", 200
+
+@orders.route("/orders", methods=['GET'])
+@jwt_required()
+def my_orders():
+
+    identity = get_jwt_identity()
+
+    orders = Orders.query.filter_by(user_id=identity).all()
+
+    lst = []
+
+    for order in orders:
+        items = Order_Items.query.filter_by(order_id=order.id).all()
+        item_lst = []
+        for item in items:
+            jwellery = Jwellerys.query.filter_by(id=item.jwellerys_id).first()
+
+            item_lst.append({
+                "type": jwellery.type,
+                "price": jwellery.price,
+                "quantity": item.quantity
+            })
+
+        lst.append({
+            "order_id": order.id,
+            "total_price": order.total_price,
+            "status": order.status,
+            "created_at": order.created_at,
+            "items": item_lst
+        })
+
+    return {"orders": lst}, 200

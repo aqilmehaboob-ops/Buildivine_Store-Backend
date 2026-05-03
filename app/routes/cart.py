@@ -1,5 +1,5 @@
 from flask import Blueprint, request
-from ..models import Cart
+from ..models import Cart, Jwellerys
 from app import db
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
@@ -29,7 +29,32 @@ def add_to_cart():
     db.session.add(cart)
     db.session.commit()
     
-    return {"message": "added to cart"}
+    return {"message": "added to cart"}, 200
+
+
+
+@cart.route("/cart", methods=['GET'])
+@jwt_required()
+def view_cart():
+
+    identity = get_jwt_identity()
+
+    items = Cart.query.filter_by(user_id=identity).all()
+
+    lst = []
+    for item in items:
+        jwellery = Jwellerys.query.filter_by(id=item.jwellery_id).first()
+        lst.append({
+            "type": jwellery.type,
+            "code": jwellery.code,
+            "price": jwellery.price,
+            "quantity": item.quantity
+
+        })
+
+    return {"data": lst}, 200
+
+
 
 
 
@@ -44,4 +69,4 @@ def remove_from_cart(jwellery_id):
     db.session.delete(item)
     db.session.commit()
 
-    return {"message": "Item removed from cart"}
+    return {"message": "Item removed from cart"}, 200
