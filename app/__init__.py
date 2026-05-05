@@ -28,4 +28,8 @@ def create_app():
     app.register_blueprint(jwellerys)
     app.register_blueprint(orders)
 
+    @app.route("/")
+    def home():
+        {"message": "API is live"}
+
     return app
